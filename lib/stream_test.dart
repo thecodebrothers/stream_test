@@ -57,7 +57,7 @@ class TestObserver {
     expect(
       _done,
       true,
-      reason: 'Expected don, but there was no done event',
+      reason: 'Expected done, but there was no done event',
     );
   }
 
@@ -77,10 +77,14 @@ class TestObserver {
     expect(_errors.first, error);
   }
 
-  Future<void> assertNoErrors(dynamic error) async {
+  Future<void> assertNoErrors() async {
     await Future.microtask(() {}); // await pending callback operations
 
-    expect(_errors.isEmpty, true);
+    expect(
+      _errors.isEmpty,
+      true,
+      reason: 'Expected no errors. Actual: $_errors',
+    );
   }
 
   Future<void> assertValueAt(int index, dynamic value) async {
