@@ -1,6 +1,6 @@
 name: stream_test
 description: Stream testing library. Test async stream with ease.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/thecodebrothers/stream_test
 
 environment:
