@@ -1,8 +1,7 @@
 import 'package:rxdart/rxdart.dart';
+import 'package:stream_test/divide_by_zero_error.dart';
 import 'package:stream_test/stream_test.dart';
 import 'package:test/test.dart';
-
-import 'divide_by_zero_error.dart';
 
 void main() {
   test(
@@ -14,7 +13,7 @@ void main() {
       final testObserver = calculate(sourceStream, divideBy).test();
 
       await testObserver.assertValue(5);
-      await testObserver.assertNotDone();
+      await testObserver.assertDone();
       await testObserver.assertNoErrors();
     },
   );

@@ -34,24 +34,37 @@ class TestObserver {
   }
 
   Future<void> assertNoValues() async {
-    await Future.microtask(() {}); // await pending callback operations
+    await Future.forEach(
+      List.generate(99, (index) => index),
+      (element) => Future.microtask(() {}),
+    );
     expect(_values, <dynamic>[]);
   }
 
   Future<void> assertValues(List<dynamic> values) async {
-    await Future.forEach(values, (element) => Future.microtask(() {}));
+    await Future.forEach(
+      List.generate(99, (index) => index),
+      (element) => Future.microtask(() {}),
+    );
     expect(_values, values);
   }
 
   Future<void> assertValue(dynamic value) async {
-    await Future.microtask(() {}); // await pending callback operations
-    expect(_values.length == 1, true);
+    await Future.forEach(
+      List.generate(99, (index) => index),
+      (element) => Future.microtask(() {}),
+    );
+    expect(
+      _values.length == 1,
+      true,
+      reason: 'Not enough values. Expected: 1, Actual: ${_values.length}',
+    );
     expect(_values.first, value);
   }
 
-  Future<void> assertDone([int emitsToSkip = 0]) async {
+  Future<void> assertDone() async {
     await Future.forEach(
-      List.generate(emitsToSkip + 1, (index) => index),
+      List.generate(99, (index) => index),
       (element) => Future.microtask(() {}),
     );
     expect(
@@ -62,7 +75,10 @@ class TestObserver {
   }
 
   Future<void> assertNotDone() async {
-    await Future.microtask(() {}); // await pending callback operations
+    await Future.forEach(
+      List.generate(99, (index) => index),
+          (element) => Future.microtask(() {}),
+    );
     expect(
       _done,
       false,
@@ -71,14 +87,20 @@ class TestObserver {
   }
 
   Future<void> assertError(dynamic error) async {
-    await Future.microtask(() {}); // await pending callback operations
+    await Future.forEach(
+      List.generate(99, (index) => index),
+          (element) => Future.microtask(() {}),
+    );
 
     expect(_errors.isNotEmpty, true);
     expect(_errors.first, error);
   }
 
   Future<void> assertNoErrors() async {
-    await Future.microtask(() {}); // await pending callback operations
+    await Future.forEach(
+      List.generate(99, (index) => index),
+          (element) => Future.microtask(() {}),
+    );
 
     expect(
       _errors.isEmpty,
@@ -89,7 +111,7 @@ class TestObserver {
 
   Future<void> assertValueAt(int index, dynamic value) async {
     await Future.forEach(
-      List.generate(index + 1, (index) => index),
+      List.generate(index + 99, (index) => index),
       (element) => Future.microtask(() {}),
     );
     expect(_values[index], value);
