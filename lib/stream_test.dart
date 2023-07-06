@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:test/test.dart';
 
 class TestObserver {
@@ -34,26 +35,17 @@ class TestObserver {
   }
 
   Future<void> assertNoValues() async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-      (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
     expect(_values, <dynamic>[]);
   }
 
   Future<void> assertValues(List<dynamic> values) async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-      (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
     expect(_values, values);
   }
 
   Future<void> assertValue(dynamic value) async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-      (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
     expect(
       _values.length == 1,
       true,
@@ -63,10 +55,7 @@ class TestObserver {
   }
 
   Future<void> assertDone() async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-      (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
     expect(
       _done,
       true,
@@ -75,10 +64,7 @@ class TestObserver {
   }
 
   Future<void> assertNotDone() async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-          (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
     expect(
       _done,
       false,
@@ -87,20 +73,14 @@ class TestObserver {
   }
 
   Future<void> assertError(dynamic error) async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-          (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
 
     expect(_errors.isNotEmpty, true);
     expect(_errors.first, error);
   }
 
   Future<void> assertNoErrors() async {
-    await Future.forEach(
-      List.generate(99, (index) => index),
-          (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
 
     expect(
       _errors.isEmpty,
@@ -110,15 +90,25 @@ class TestObserver {
   }
 
   Future<void> assertValueAt(int index, dynamic value) async {
-    await Future.forEach(
-      List.generate(index + 99, (index) => index),
-      (element) => Future.microtask(() {}),
-    );
+    await _flushMicrotaskQueue();
     expect(_values[index], value);
   }
 
   Future<void> assertStreamMatchers(StreamMatcher matcher) async {
     expect(matcher, Stream.fromIterable(_values));
+  }
+
+  Future<void> _flushMicrotaskQueue() async {
+    final microtaskCounter =
+        (Zone.current['microtaskCounter'] as ZoneMicrotaskCounter?) ??
+            ZoneMicrotaskCounter.withCount(100);
+
+    final queueCount = microtaskCounter._count;
+    await Future.forEach(
+      List.generate(queueCount, (index) => index),
+      (element) => Future.microtask(() {}),
+    );
+    microtaskCounter.clear();
   }
 }
 
@@ -128,4 +118,56 @@ extension ObserverExtension on Stream<dynamic> {
 
     return observer;
   }
+}
+
+class ZoneMicrotaskCounter {
+  ZoneMicrotaskCounter();
+
+  ZoneMicrotaskCounter.withCount(this._count);
+
+  int _count = 0;
+
+  void add() => _count++;
+
+  void clear() => _count = 0;
+}
+
+void streamTestZone(void Function() body) {
+  runZoned(
+    body,
+    zoneSpecification: ZoneSpecification(
+      scheduleMicrotask: (self, parent, zone, f) {
+        (self['microtaskCounter'] as ZoneMicrotaskCounter?)?.add();
+        parent.scheduleMicrotask(zone, f);
+      },
+    ),
+    zoneValues: {
+      'microtaskCounter': ZoneMicrotaskCounter(),
+    },
+  );
+}
+
+@isTest
+void streamTest(
+  Object description,
+  dynamic Function() body, {
+  String? testOn,
+  Timeout? timeout,
+  Object? skip,
+  Object? tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+}) {
+  streamTestZone(() {
+    test(
+      description,
+      body,
+      skip: skip,
+      tags: tags,
+      timeout: timeout,
+      testOn: testOn,
+      onPlatform: onPlatform,
+      retry: retry,
+    );
+  });
 }

@@ -12,47 +12,56 @@ https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/
 
 ## Usage
 
+To start writing stream tests just use `.test()` extension on your stream.
+
+To get the best performance out of your tests use `streamTest` as a test function or `streamTestZone` inside your test
+function.
+
+## Examples
+
 ```dart
-test(
-    'should skip initial source value',
-    () async {
-      final sourceStream = Stream.value(1);
-      const divideBy = 1;
-
-      final testObserver = calculate(sourceStream, divideBy).test();
-
-      await testObserver.assertValue(5);
-      await testObserver.assertNotDone();
-      await testObserver.assertNoErrors();
-    },
-  );
-
-  test(
-    'should emits value from given stream source',
-    () async {
-      final sourceStream = PublishSubject<int>();
-      const divideBy = 1;
-
-      final testObserver = calculate(sourceStream, divideBy).test();
-      sourceStream
-        ..add(10)
-        ..add(12);
-
-      await testObserver.assertValues([5, 12]);
-      await testObserver.assertNotDone();
-      await testObserver.assertNoErrors();
-    },
-  );
-
-  test(
+  streamTest(
     'should throw error on divide by 0',
-    () async {
+        () async {
       final sourceStream = Stream.value(1);
       const divideBy = 0;
 
       final testObserver = calculate(sourceStream, divideBy).test();
 
       await testObserver.assertError(DivideByZeroError());
+    },
+  );
+
+  test(
+    'should emits value from given stream source',
+        () {
+      streamTestZone(() async {
+        final sourceStream = PublishSubject<int>();
+        const divideBy = 1;
+
+        final testObserver = calculate(sourceStream, divideBy).test();
+        sourceStream
+          ..add(10)
+          ..add(12);
+
+        await testObserver.assertValues([5, 12]);
+        await testObserver.assertNotDone();
+        await testObserver.assertNoErrors();
+      });
+    },
+  );
+
+  test(
+    'should skip initial source value',
+        () async {
+      final sourceStream = Stream.value(1);
+      const divideBy = 1;
+
+      final testObserver = calculate(sourceStream, divideBy).test();
+
+      await testObserver.assertValue(5);
+      await testObserver.assertDone();
+      await testObserver.assertNoErrors();
     },
   );
 ```
