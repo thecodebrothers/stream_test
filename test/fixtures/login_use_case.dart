@@ -10,9 +10,7 @@ class LoginUseCase {
     required String email,
     required String password,
   }) {
-    return _authRepository
-        .login(email, password)
-        .flatMap(
+    return _authRepository.login(email, password).flatMap(
           (value) => _authEventsService
               .notifyAuthenticated(value)
               .map((event) => value),
@@ -21,7 +19,7 @@ class LoginUseCase {
 }
 
 abstract class AuthRepository {
-  Stream<String> login(String email,String password);
+  Stream<String> login(String email, String password);
 }
 
 abstract class AuthEventService {
