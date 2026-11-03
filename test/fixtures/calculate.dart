@@ -6,7 +6,7 @@ class DivideByZeroError extends Error {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is DivideByZeroError && runtimeType == other.runtimeType;
+      other is DivideByZeroError && runtimeType == other.runtimeType;
 
   @override
   int get hashCode => 0;

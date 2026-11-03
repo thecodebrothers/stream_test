@@ -1,7 +1,8 @@
 import 'package:mocktail/mocktail.dart';
-import 'package:stream_test/login_use_case.dart';
 import 'package:stream_test/stream_test.dart';
 import 'package:test/test.dart';
+
+import 'fixtures/login_use_case.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
